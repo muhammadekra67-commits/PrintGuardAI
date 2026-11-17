@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PrintGuard AI | 3D Print Failure Predictor</title>
+<style>
+:root{--navy:#102b55;--blue:#1768c4;--cyan:#27bfd5;--bg:#eef5fc;--ink:#1c2d45;--muted:#687b91;--line:#dce7f2;--green:#15966b;--red:#d94b56;--amber:#d88a20}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(135deg,#eaf4ff,#f8fbff);font-family:Arial,Helvetica,sans-serif;color:var(--ink)}
+header{background:linear-gradient(115deg,#0c2550,#1768c4);color:white;padding:28px 6vw 34px}
+.brand{font-size:13px;letter-spacing:2px;color:#8fe9f3;font-weight:bold}.hero{display:flex;align-items:center;justify-content:space-between;gap:24px;max-width:1180px;margin:auto}
+h1{font-size:clamp(27px,4vw,43px);margin:12px 0 8px}.sub{color:#d8eaff;max-width:670px;line-height:1.55}
+.badge{display:inline-block;border:1px solid #78cde8;border-radius:30px;padding:8px 13px;font-size:12px;color:#dffaff;margin-top:10px}
+main{max-width:1180px;margin:28px auto;padding:0 20px 45px;display:grid;grid-template-columns:1.2fr .8fr;gap:22px}
+.card{background:white;border:1px solid var(--line);border-radius:18px;padding:23px;box-shadow:0 10px 28px rgba(22,65,112,.07)}
+h2{margin:0 0 6px;color:var(--navy);font-size:21px}.hint{font-size:13px;color:var(--muted);line-height:1.5;margin:0 0 20px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+label{font-size:13px;font-weight:bold;color:#40536b;display:block;margin-bottom:7px}
+input,select{width:100%;border:1px solid #cbd9e8;border-radius:9px;padding:12px 11px;font-size:15px;background:#fbfdff;color:#172b45;outline:none}
+input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px #1768c41c}
+.unit{font-size:11px;color:#8090a3;font-weight:normal}
+button{border:0;border-radius:10px;padding:14px 20px;background:linear-gradient(90deg,#1768c4,#168fca);color:white;font-weight:bold;font-size:15px;cursor:pointer;margin-top:20px;width:100%;box-shadow:0 7px 16px #1768c433}
+button:hover{filter:brightness(1.06)}
+.result{min-height:330px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.circle{width:145px;height:145px;border-radius:50%;border:10px solid #dbeaf8;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:12px auto 16px}
+.circle strong{font-size:36px;color:var(--navy)}.circle span{font-size:11px;color:var(--muted)}
+.status{font-weight:bold;font-size:20px;margin:3px 0 8px}.explain{font-size:14px;color:var(--muted);line-height:1.55;max-width:360px}
+.chips{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-top:15px}.chip{font-size:11px;background:#edf5ff;color:#285783;border-radius:20px;padding:7px 10px}
+.note{grid-column:1/-1;background:#fff9e9;border:1px solid #f1dca9;border-radius:12px;padding:14px 17px;color:#73531a;font-size:12px;line-height:1.55}
+footer{text-align:center;color:#8190a2;font-size:12px;padding:0 20px 25px}
+@media(max-width:800px){main{grid-template-columns:1fr}.hero{display:block}.grid{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.grid{grid-template-columns:1fr}.card{padding:18px}}
+</style>
+</head>
+<body>
+<header><div class="hero"><div>
+<div class="brand">PRINTGUARD AI · IDP PROJECT</div>
+<h1>3D Print Failure Predictor</h1>
+<p class="sub">Enter your print settings to view a demonstration risk estimate and receive basic parameter checks before printing.</p>
+<span class="badge">AI-ASSISTED ADDITIVE MANUFACTURING</span>
+</div></div></header>
+<main>
+<section class="card">
+<h2>Print Job Details</h2>
+<p class="hint">Enter the settings planned for your next print. Use values recommended by your filament and printer manufacturer.</p>
+<form id="predictForm">
+<div class="grid">
+<div><label for="material">Material</label><select id="material"><option value="PLA">PLA</option><option value="ABS">ABS</option><option value="PETG">PETG</option><option value="TPU">TPU</option></select></div>
+<div><label for="nozzle">Nozzle temperature <span class="unit">(°C)</span></label><input id="nozzle" type="number" min="0" max="350" value="205" required></div>
+<div><label for="bed">Bed temperature <span class="unit">(°C)</span></label><input id="bed" type="number" min="0" max="150" value="60" required></div>
+<div><label for="speed">Print speed <span class="unit">(mm/s)</span></label><input id="speed" type="number" min="1" max="500" value="50" required></div>
+<div><label for="layer">Layer height <span class="unit">(mm)</span></label><input id="layer" type="number" min="0.01" max="2" step="0.01" value="0.20" required></div>
+<div><label for="fan">Cooling fan <span class="unit">(%)</span></label><input id="fan" type="number" min="0" max="100" value="100" required></div>
+<div><label for="infill">Infill density <span class="unit">(%)</span></label><input id="infill" type="number" min="0" max="100" value="20" required></div>
+<div><label for="adhesion">Build-plate adhesion</label><select id="adhesion"><option value="yes">Checked / suitable</option><option value="no">Not checked</option></select></div>
+</div>
+<button type="submit">Predict Print Risk</button>
+</form>
+</section>
+<section class="card result" id="result" aria-live="polite">
+<h2>Prediction Result</h2>
+<p class="hint">Your result will appear here after you submit the print settings.</p>
+<div style="font-size:58px">🖨️</div>
+<p class="explain">Complete the form and select <b>Predict Print Risk</b>.</p>
+</section>
+<div class="note"><b>Important project note:</b> This first website is a front-end demonstration using simple illustrative rules. It is <b>not yet a trained Machine Learning model</b>, and its score is not a validated failure probability. To make a real ML predictor, connect a labelled 3D-print dataset, train and test a model, then replace the demonstration logic with the model API.</div>
+</main>
+<footer>Student IDP prototype · AI-Assisted 3D Printing · For educational demonstration only</footer>
+<script>
+const form=document.getElementById('predictForm');
+form.addEventListener('submit',function(e){
+ e.preventDefault();
+ const material=document.getElementById('material').value;
+ const nozzle=+document.getElementById('nozzle').value, bed=+document.getElementById('bed').value;
+ const speed=+document.getElementById('speed').value, layer=+document.getElementById('layer').value;
+ const fan=+document.getElementById('fan').value, infill=+document.getElementById('infill').value;
+ const adhesion=document.getElementById('adhesion').value;
+ let risk=15, reasons=[];
+ const ranges={PLA:{n:[190,220],b:[45,65]},ABS:{n:[230,260],b:[90,110]},PETG:{n:[225,250],b:[70,85]},TPU:{n:[210,240],b:[30,60]}};
+ const r=ranges[material];
+ if(nozzle<r.n[0]||nozzle>r.n[1]){risk+=18;reasons.push('Nozzle temperature is outside a common '+material+' range.')}
+ if(bed<r.b[0]||bed>r.b[1]){risk+=15;reasons.push('Bed temperature is outside a common '+material+' range.')}
+ if(speed>100){risk+=15;reasons.push('High print speed may reduce print stability.')}
+ if(layer>0.32||layer<0.08){risk+=12;reasons.push('Layer height is outside a common general-purpose range.')}
+ if(material==='ABS'&&fan>30){risk+=12;reasons.push('High cooling fan may increase ABS warping risk.')}
+ if(material==='PLA'&&fan<30){risk+=8;reasons.push('Low cooling may affect PLA detail and bridging.')}
+ if(infill>85){risk+=5;reasons.push('Very high infill can increase print time and thermal stress.')}
+ if(adhesion==='no'){risk+=18;reasons.push('Build-plate adhesion has not been checked.')}
+ risk=Math.min(95,risk);
+ let level=risk<30?'Lower demonstration risk':risk<55?'Moderate demonstration risk':'Higher demonstration risk';
+ let color=risk<30?'#15966b':risk<55?'#d88a20':'#d94b56';
+ if(!reasons.length) reasons.push('No major warning was found by the basic demonstration checks.');
+ document.getElementById('result').innerHTML=
+ '<h2>Prediction Result</h2><div class="circle" style="border-color:'+color+'"><strong>'+risk+'%</strong><span>DEMO RISK SCORE</span></div>'+
+ '<div class="status" style="color:'+color+'">'+level+'</div>'+
+ '<p class="explain">This is a rule-based demonstration score, not an ML probability or a guarantee of print success.</p>'+
+ '<div style="text-align:left;width:100%;margin-top:12px"><b style="font-size:13px;color:#102b55">Parameter checks</b><ul style="font-size:13px;line-height:1.6;color:#53677e;padding-left:20px">'+reasons.map(x=>'<li>'+x+'</li>').join('')+'</ul></div>'+
+ '<div class="chips"><span class="chip">'+material+'</span><span class="chip">'+speed+' mm/s</span><span class="chip">'+layer+' mm layer</span></div>';
+});
+</script>
+</body></html>
